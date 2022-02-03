@@ -1,0 +1,63 @@
+%{
+ #include <string.h>
+%}
+
+%{
+int line = 1;
+int ch = 1;
+int forint;
+float forreal;
+%}
+
+%x comment
+
+%%
+"//" BEGIN(comment);
+<comment>"\n" { BEGIN(INITIAL);
+line++; 
+ch=1; }
+
+"\n"	{
+	line++;
+	ch=1;}
+
+" "	|
+"\t"	{
+	ch = ch + 7; }
+
+<comment>{
+" "	|
+"\t" {
+	ch++;
+}
+
+.*	ch += yyleng;	
+
+}
+
+
+[A-Za-z_][A-Za-z0-9_]* { printf("%d tIDENT (%s)\n",line,yytext);
+ch += yyleng; }
+
+[0-9]+[.][0-9]*[Ee][0-9]*[-]?[0-9]+|[0-9]+[.][0-9]* { 
+forreal = atof (yytext);
+printf("%d tPOSREAL (%f)\n",line,yytext,forreal);
+ch += yyleng; }
+
+[0-9][0-9]* {
+forint = atoi(yytext);
+printf("%d tPOSINT (%d)\n",line,forint);
+ch += yyleng; }
+
+[-][0-9][0-9]* {
+forint = atoi(yytext);
+printf("%d tNEGINT (%d)\n",line,forint);
+ch += yyleng; }
+
+%%
+main() 
+{
+ yylex(); 
+}
+ 
+ 
